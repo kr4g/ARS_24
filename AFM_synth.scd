@@ -63,7 +63,7 @@ SynthDef(\imp, {
 	sig = BPF.ar(sig, freq: fltFreqEnv, rq: 0.1, mul: 12.dbamp);
 	sig = sig.sum;
 	sig = sig.tanh;
-	sig = sig * Env.linen(0.01, duration*0.5, duration*0.5, curve: -4).kr(Done.freeSelf);
+	sig = sig * Env.linen(0.01, duration, 0.01, curve: -4).kr(Done.freeSelf);
 	sig = Splay.ar(sig);
 	Out.ar(\out.kr(0), sig);
 }).add;
@@ -79,14 +79,23 @@ SynthDef(\dialup, {
 	snd = snd * \amp.kr(-7.dbamp);
 	Out.ar(\out.kr(0), snd);
 }).add;
+
+SynthDef(\reverb, {
+	var inSig, verb;
+	inSig = In.ar(\in.kr(0), chans);
+	verb = FreeVerb.ar(inSig, mix: 0.85, room: 0.9, damp: 0.15);
+	Out.ar(\out.kr(0), verb);
+}).add;
 )
 
 (
-var dur = 10;
+var dur = 8;
 var peakIdx = ~afm[0].minIndex;
 var timeStep = dur/1000;
-var frqLvl = ~afm[0].linexp(0.0,1.0,100.0,3.0);
-var fltFrqLvl = ~afm_deriv[0].linexp(0.0,1.0,150.0,11000.0);
+var peakTime = timeStep*(peakIdx);
+var frqLvl = ~afm[0].linexp(0.0,1.0,150.0,3.0);
+var fltFrqLvl = ~afm_deriv[0].linexp(0.0,1.0,150.0,10000.0);
+s.bind {~fx = Synth.tail(nil, \reverb); };
 Routine({
 	s.bind {
 		Synth(\imp, [
@@ -96,9 +105,12 @@ Routine({
 			\fltFreqLvls, fltFrqLvl,
 		]);
 	};
-	(timeStep*(peakIdx)).wait;
+	peakTime.wait;
 	s.bind {
-		Synth(\dialup, [\amp, -18.dbamp]);
+		Synth(\dialup, [\amp, -21.dbamp]);
 	};
+	((dur - peakTime)*2).wait;
+	"done".postln;
+	s.bind { ~fx.free; };
 }).play;
 )
