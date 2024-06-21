@@ -1,9 +1,11 @@
-// 0. Init Server
+// 0. Get output devices
+ServerOptions.devices;
+
+// 1. Init Server
 (
 Server.killAll;
 Buffer.freeAll;
 s = Server.local;
-// ServerOptions.devices;
 s.options.outDevice_(
 	// "MacBook Pro Speakers"
 	"External Headphones"
@@ -19,59 +21,84 @@ s.options.memSize_(2.pow(20));
 s.reboot;
 )
 
+// 2. Load buffers
 (
-var id = 185;
-~amps = [];
-b = Buffer.read(server: s, path: "/Users/ryanmillett/ARS_24/Buffers/c34sr" ++ id.asString ++ "_fdc.wav");
-b.loadToFloatArray(action: { arg array; ~amps = array;});
-// b.free;
+var projectPath = PathName.new(thisProcess.nowExecutingPath).parentPath;
+var id = 165;
+~afm = [];
+5.do{ |i|
+	b = Buffer.read(server: s, path: projectPath ++ "Buffers/c34sr" ++ id ++ "_fdc.gauss_" ++ i ++ ".wav");
+	b.loadToFloatArray(action: { |array|
+		~afm = ~afm.add(array.linlin(array.minItem, array.maxItem, 0.0, 1.0));
+	});
+};
 
-/*~derivs = [];
-c = Buffer.read(server: s, path: "/Users/ryanmillett/ARS_24/Buffers/c34st" ++ id.asString ++ "_fdc.deriv_gauss_1.wav");
-c.loadToFloatArray(action: { |array|
-var indices = (0..1000-1);
-~derivs = ~derivs.add(indices.collect { |n| array[n].linlin(-1.0,1.0,55.0,880.0) });
-// ~derivs = array;
-});*/
+~afm_deriv = [];
+5.do{ |i|
+	c = Buffer.read(server: s, path: projectPath ++ "Buffers/c34sr" ++ id.asString ++ "_fdc.deriv_gauss_" ++ i ++ ".wav");
+	c.loadToFloatArray(action: { |array|
+		~afm_deriv = ~afm_deriv.add(array.linlin(array.minItem, array.maxItem, 0.0, 1.0));
+	});
+};
 )
 
-~amps = ~amps.linlin(-1.0,1.0,0.0,1.0);
-~amps.plot();
+~afm.plot();
+~afm_deriv.plot();
 
 Buffer.freeAll;
 
-~amps[0].size;
-~derivs[0].size;
-
-Env.new(levels: ~amps, times: 0.01, curve: 'sine').plot(size: 10000);
-Env.new(levels: ~derivs[0], times: 1/1000).plot(size: 1000);
-{~amps[0]}.plot();
-
 (
-var n = 1000;
+var n = ~afm[0].size;
 var chans = 2;
-SynthDef(\Envtest, {
-	var sig, env, aenv, fenv;
-	aenv = \envA.kr((1..999));
-	fenv = Env.new(levels: \envF.kr((1..999)), times: 1/n, curve: \sine).kr(Done.freeSelf);
-	sig = {LFSaw.ar(freq: 55)}!chans;
-	env = Env.new(levels: aenv, times: 1/n, curve: \sine).kr(Done.freeSelf);
-	sig = BPF.ar(sig, freq: fenv, rq: 0.1, mul: 8.dbamp);
-	sig = sig * env;
+
+SynthDef(\imp, {
+	var sig, fundFreq, fundFreqEnv, freqLvls, fltFreqLvls, fltFreqEnv, duration;
+	duration = \dur.kr(1);
+	fundFreq = \freq.kr(880);
+	freqLvls = \freqLvls.kr([0] ++ (n-2).collect{ exprand(3,30) } ++ [0]);
+	fundFreqEnv = Env(levels: freqLvls, times: duration/n, curve: \sine).ar;
+	sig = Pluck.ar(WhiteNoise.ar(0.5), Impulse.ar(fundFreqEnv * [1.0,1.5]), fundFreq.reciprocal, fundFreq.reciprocal, decaytime: 1.0, coef: [0.75, 0.5], mul: 9.dbamp);
+	fltFreqLvls = \fltFreqLvls.kr(n.collect{ exprand(4400,10000) });
+	fltFreqEnv = Env(levels: fltFreqLvls, times: duration/n, curve: \sine).ar;
+	sig = BPF.ar(sig, freq: fltFreqEnv, rq: 0.1, mul: 12.dbamp);
+	sig = sig.sum;
+	sig = sig.tanh;
+	sig = sig * Env.linen(0.01, duration*0.5, duration*0.5, curve: -4).kr(Done.freeSelf);
 	sig = Splay.ar(sig);
 	Out.ar(\out.kr(0), sig);
+}).add;
+
+SynthDef(\dialup, {
+	var snd, duration;
+	duration = \duration.kr(0.3);
+	snd = SinOsc.ar(TIRand.ar(0, 5, Impulse.ar(100 ! 3)).linexp(0, 5, 200, 16050));
+	snd = Splay.ar(snd);
+	snd = LPF.ar(snd, XLine.ar(8000, 100, duration));
+	snd = snd + (RHPF.ar(Hasher.ar(Sweep.ar), 1520, 0.3) * Env.linen(0, 0.02, 0).ar * (1 + Env.perc(0, 0.01).ar) * -2.dbamp);
+	snd = snd * Env.linen(0, duration, 0.001, curve: -4).ar(Done.freeSelf);
+	snd = snd * \amp.kr(-7.dbamp);
+	Out.ar(\out.kr(0), snd);
 }).add;
 )
 
 (
-s.bind {Synth(\Envtest, [\envA, ~amps, \envF, ~amps.linlin(0.0,1.0,55.0,880.0*2)]);};
+var dur = 10;
+var peakIdx = ~afm[0].minIndex;
+var timeStep = dur/1000;
+var frqLvl = ~afm[0].linexp(0.0,1.0,100.0,3.0);
+var fltFrqLvl = ~afm_deriv[0].linexp(0.0,1.0,150.0,11000.0);
+Routine({
+	s.bind {
+		Synth(\imp, [
+			\freq, 1760,
+			\dur, dur,
+			\freqLvls, frqLvl,
+			\fltFreqLvls, fltFrqLvl,
+		]);
+	};
+	(timeStep*(peakIdx)).wait;
+	s.bind {
+		Synth(\dialup, [\amp, -18.dbamp]);
+	};
+}).play;
 )
-
-(
-var n = 100;
-5.do {
-	// Env.new(levels: n.collect{rrand(-1.0,1.0)}, times: (n-1).collect{exprand(0.01,0.5)}, curve: \sine).plot();
-	Env.new(levels: n.collect{rrand(-1.0, 1.0)}, times: 0.1, curve: \sine).plot();
-};
-)
-
