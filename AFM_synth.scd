@@ -24,26 +24,21 @@ s.reboot;
 // 2. Load buffers
 (
 var projectPath = PathName.new(thisProcess.nowExecutingPath).parentPath;
-var id = 165;
-~afm = [];
-5.do{ |i|
-	b = Buffer.read(server: s, path: projectPath ++ "Buffers/c34sr" ++ id ++ "_fdc.gauss_" ++ i ++ ".wav");
-	b.loadToFloatArray(action: { |array|
-		~afm = ~afm.add(array.linlin(array.minItem, array.maxItem, 0.0, 1.0));
-	});
-};
+// var id = 165;
 
-~afm_deriv = [];
-5.do{ |i|
-	c = Buffer.read(server: s, path: projectPath ++ "Buffers/c34sr" ++ id.asString ++ "_fdc.deriv_gauss_" ++ i ++ ".wav");
-	c.loadToFloatArray(action: { |array|
-		~afm_deriv = ~afm_deriv.add(array.linlin(array.minItem, array.maxItem, 0.0, 1.0));
-	});
-};
+~afm = [];
+b = Buffer.read(server: s, path: projectPath ++ "Buffers/test.wav");
+b.loadToFloatArray(action: { |array|
+	b.numChannels.do { |i|
+		var channelData = Array.fill(b.numFrames, { |j| array[j * b.numChannels + i] });
+		channelData = channelData.linlin(channelData.minItem, channelData.maxItem, 0.0, 1.0);
+		~afm = ~afm.add(channelData);
+	};
+});
 )
 
-~afm.plot();
-~afm_deriv.plot();
+~afm.plot(bounds: 800);
+~afm_deriv.plot(bounds: 800);
 
 Buffer.freeAll;
 
@@ -75,7 +70,7 @@ SynthDef(\dialup, {
 	snd = Splay.ar(snd);
 	snd = LPF.ar(snd, XLine.ar(8000, 100, duration));
 	snd = snd + (RHPF.ar(Hasher.ar(Sweep.ar), 1520, 0.3) * Env.linen(0, 0.02, 0).ar * (1 + Env.perc(0, 0.01).ar) * -2.dbamp);
-	snd = snd * Env.linen(0, duration, 0.001, curve: -4).ar(Done.freeSelf);
+	snd = snd * Env.linen(0, duration, 0.001, curve: -4).kr(Done.freeSelf);
 	snd = snd * \amp.kr(-7.dbamp);
 	Out.ar(\out.kr(0), snd);
 }).add;
@@ -89,7 +84,7 @@ SynthDef(\reverb, {
 )
 
 (
-var dur = 8;
+var dur = 15;
 var peakIdx = ~afm[0].minIndex;
 var timeStep = dur/1000;
 var peakTime = timeStep*(peakIdx);
