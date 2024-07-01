@@ -8,14 +8,14 @@ Buffer.freeAll;
 s = Server.local;
 s.options.outDevice_(
 	// "MacBook Pro Speakers"
-	"External Headphones"
-	// "ZoomAudioD"
+	// "External Headphones"
+	"ZoomAudioD"
 	// "Scarlett 4i4 USB"
 	// "MME : Out 1-24 (MOTU Pro Audio)"
 );
 s.options.inDevice_("Built-in Microph");
-s.options.numOutputBusChannels_(2);
 s.options.numInputBusChannels_(0);
+s.options.numOutputBusChannels_(2);
 s.options.sampleRate_(48000);
 s.options.memSize_(2.pow(20));
 s.reboot;
@@ -24,10 +24,10 @@ s.reboot;
 // 2. Load buffers
 (
 var projectPath = PathName.new(thisProcess.nowExecutingPath).parentPath;
-// var id = 165;
+var id = "sr" ++ 166;
 
 ~afm = [];
-b = Buffer.read(server: s, path: projectPath ++ "Buffers/test.wav");
+b = Buffer.read(server: s, path: projectPath ++ "Buffers/c34" ++ id ++ "_fdc.wav");
 b.loadToFloatArray(action: { |array|
 	b.numChannels.do { |i|
 		var channelData = Array.fill(b.numFrames, { |j| array[j * b.numChannels + i] });
@@ -35,15 +35,26 @@ b.loadToFloatArray(action: { |array|
 		~afm = ~afm.add(channelData);
 	};
 });
+
+~afm_dx = [];
+c = Buffer.read(server: s, path: projectPath ++ "Buffers/c34" ++ id ++ "_fdc_dx.wav");
+c.loadToFloatArray(action: { |array|
+	c.numChannels.do { |i|
+		var channelData = Array.fill(b.numFrames, { |j| array[j * c.numChannels + i] });
+		channelData = channelData.linlin(channelData.minItem, channelData.maxItem, 0.0, 1.0);
+		~afm_dx = ~afm_dx.add(channelData);
+	};
+});
 )
 
 ~afm.plot(bounds: 800);
-~afm_deriv.plot(bounds: 800);
+~afm_dx.plot(bounds: 800);
 
 Buffer.freeAll;
 
 (
-var n = ~afm[0].size;
+// var n = ~afm[0].size;
+var n = 1000;
 var chans = 2;
 
 SynthDef(\imp, {
@@ -78,18 +89,20 @@ SynthDef(\dialup, {
 SynthDef(\reverb, {
 	var inSig, verb;
 	inSig = In.ar(\in.kr(0), chans);
-	verb = FreeVerb.ar(inSig, mix: 0.85, room: 0.9, damp: 0.15);
+	verb = FreeVerb.ar(inSig, mix: 0.65, room: 0.9, damp: 0.15);
 	Out.ar(\out.kr(0), verb);
 }).add;
 )
 
+
 (
-var dur = 15;
-var peakIdx = ~afm[0].minIndex;
+var i = 2;
+var dur = 7;
+var peakIdx = ~afm[i].minIndex;
 var timeStep = dur/1000;
 var peakTime = timeStep*(peakIdx);
-var frqLvl = ~afm[0].linexp(0.0,1.0,150.0,3.0);
-var fltFrqLvl = ~afm_deriv[0].linexp(0.0,1.0,150.0,10000.0);
+var frqLvl = ~afm[i].linexp(0.0,1.0,50.0,3.0);
+var fltFrqLvl = ~afm_dx[i].linexp(0.0,1.0,90.0,5000.0);
 s.bind {~fx = Synth.tail(nil, \reverb); };
 Routine({
 	s.bind {
@@ -102,7 +115,8 @@ Routine({
 	};
 	peakTime.wait;
 	s.bind {
-		Synth(\dialup, [\amp, -21.dbamp]);
+		Synth(\dialup, [\amp, -18.dbamp]);
+		"boop!".postln;
 	};
 	((dur - peakTime)*2).wait;
 	"done".postln;
