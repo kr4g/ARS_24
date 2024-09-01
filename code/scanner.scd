@@ -1,56 +1,79 @@
 (
-var bufferPath = "/Users/ryanmillett/Downloads/presentation_examples/audio/1_cps_ex1b_navigations_43.wav";
-var buffer = Buffer.read(s, bufferPath);
+var bufferPath = PathName.new(PathName.new(thisProcess.nowExecutingPath).parentPath ++ "buffers/calc_oscil_norm.wav");
+var buffer = Buffer.read(s, bufferPath.fullPath);
 var ar = Array.new;
 var currentPos = 0;
 var routine;
 
 Routine({
-    s.sync;
-    buffer.loadToFloatArray(action: { |array|
-        buffer.numChannels.do { |i|
-            var channelData = array.clump(buffer.numChannels).collect({ |chanVals| chanVals[i] });
-            ar = ar.add(channelData);
-        };
-        s.sync;
-        ~bufferData = ar;
-    });
+	s.sync;
+	buffer.loadToFloatArray(action: { |array|
+		buffer.numChannels.do { |i|
+			var channelData = array.clump(buffer.numChannels).collect({ |chanVals| chanVals[i] });
+			ar = ar.add(channelData);
+		};
+		s.sync;
+		~bufferData = ar;
+	});
 }).play;
 
 ~scanBuffer = { |targetPos = 0.5, scanRate = 100|
-    if (routine.notNil and: { routine.isPlaying }) {
-        routine.stop;
-    };
+	if (routine.notNil and: { routine.isPlaying }) {
+		routine.stop;
+	};
 
-    routine = Routine({
-        var startIndex, endIndex, increment, scanInterval;
+	routine = Routine({
+		var startIndex, endIndex, increment, scanInterval;
 
-        startIndex = (currentPos * (~bufferData[0].size - 1)).asInteger;
-        endIndex = (targetPos * (~bufferData[0].size - 1)).asInteger;
-        increment = if(startIndex < endIndex, { 1 }, { -1 });
-        scanInterval = scanRate / 1000;
+		startIndex = (currentPos * (~bufferData[0].size - 1)).asInteger;
+		endIndex = (targetPos * (~bufferData[0].size - 1)).asInteger;
+		increment = if(startIndex < endIndex, { 1 }, { -1 });
+		scanInterval = scanRate / 1000;
 
-        while({
-            (increment > 0 and: { startIndex <= endIndex }) or:
-            (increment < 0 and: { startIndex >= endIndex });
-        }, {
-            ("Position: " ++ (startIndex / (~bufferData[0].size - 1)).asFloat ++
-            " Channel 1: " ++ ~bufferData[0][startIndex] ++
-            " Channel 2: " ++ ~bufferData[1][startIndex]).postln;
+		while({
+			(increment > 0 and: { startIndex <= endIndex }) or:
+			(increment < 0 and: { startIndex >= endIndex });
+		}, {
+			// ("Position: " ++ (startIndex / (~bufferData[0].size - 1)).asFloat ++
+			// 	" Channel 1: " ++ ~bufferData[0][startIndex] ++
+			// " Channel 2: " ++ ~bufferData[1][startIndex]).postln;
+			~bufferSynths[\all].do { |synth|
+				synth.set(
+					\lag, scanInterval,
+					\wipe, ~bufferData[0][startIndex],
+					\width, ~bufferData[1][startIndex],
+					\rateMod, ~bufferData[0][startIndex].linlin(0, 1, 0.01, 3.0),
+					\direction, increment,
+					\pitchMod, ~bufferData[1][startIndex].linexp(0, 1, 0.07, 5.7),
+					\pitchModMin, ~bufferData[0][startIndex].linexp(0, 1, 0.5, 0.96),
+					\pitchModMax, ~bufferData[1][startIndex].linlin(0, 1, 1.0, 1.83),
+					\rateModMin, ~bufferData[0][startIndex].linlin(0, 1, 0.5, 0.96),
+					\rateModMax, ~bufferData[1][startIndex].linlin(0, 1, 1.0, 1.67),
+				);
+			};
 
-            startIndex = startIndex + increment;
+			~bufferSynths[\playBuf1].do { |synth|
+				// synth.postln;
+				synth.set(\amp, ~bufferData[1][startIndex].linlin(0, 1, -48.dbamp, -6.dbamp));
+			};
 
-            if ((increment > 0 and: { startIndex >= endIndex }) or:
-                (increment < 0 and: { startIndex <= endIndex })) {
-                "Target position reached.".postln;
-                currentPos = startIndex / (~bufferData[0].size - 1);
-                routine.stop;
-            };
-            scanInterval.wait;
-        });
-    });
+			~bufferSynths[\playBuf2].do { |synth|
+				synth.set(\amp, ~bufferData[1][startIndex].linlin(0, 1, -6.dbamp, -48.dbamp));
+			};
 
-    routine.play;
+			startIndex = startIndex + increment;
+
+			if ((increment > 0 and: { startIndex >= endIndex }) or:
+				(increment < 0 and: { startIndex <= endIndex })) {
+				"Target position reached.".postln;
+				currentPos = startIndex / (~bufferData[0].size - 1);
+				routine.stop;
+			};
+			scanInterval.wait;
+		});
+	});
+
+	routine.play;
 };
 )
 ~scanBuffer.value(0.1, 10);

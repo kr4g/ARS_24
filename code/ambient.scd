@@ -71,7 +71,7 @@ Routine({
 				\maxLPF, rrand(1000, 5000),
 				\amp, rrand(-24.dbamp, -8.dbamp)
 			);
-			exprand(2, 5).wait;
+			exprand(1, 5).wait;
 		};
 		time.wait;
 	};

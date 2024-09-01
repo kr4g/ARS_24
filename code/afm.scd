@@ -29,7 +29,8 @@ Buffer.freeAll;
 			{
 				s.bind{ Synth(\boing, [\amp, -8.dbamp]); };
 				s.bind{ ~plucks.set(\gate, 0); };
-				s.bind{ ~steam = Synth(\heat); };
+
+				s.bind{ ~steam = Synth(\heat, [\amp, 0.8]); };
 				// "BOING!".postln;
 			},
 			{
