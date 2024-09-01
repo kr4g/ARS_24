@@ -2,11 +2,11 @@ ServerOptions.devices;
 (
 s = Server.local;
 s.options.outDevice_(
-	// "MacBook Pro Speakers"
+	"MacBook Pro Speakers"
 	// "External Headphones"
 	// "Scarlett 4i4 USB"
 	// "Klipsch One II"
-	"UMC1820"
+	// "UMC1820"
 );
 s.options.inDevice_("Built-in Microph");
 s.options.numOutputBusChannels_(5);
