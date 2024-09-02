@@ -9,7 +9,7 @@ s.options.outDevice_(
 	"UMC1820"
 );
 s.options.inDevice_("Built-in Microph");
-s.options.numOutputBusChannels_(5);
+s.options.numOutputBusChannels_(6);
 s.options.numInputBusChannels_(0);
 s.options.sampleRate_(48000);
 s.options.memSize_(2.pow(20));
@@ -21,6 +21,16 @@ s.reboot;
 )
 Synth(\default)
 
+thisProcess.openUDPPort(1010);
+thisProcess.openPorts;
+
+(
+OSCdef(\happyScore, { |msg|
+    var receivedValue = msg[1];
+    receivedValue.postln;
+}, '/ch1');
+)
+
 (
 SynthDef(\pinkTest, {
 	var sig;
@@ -31,7 +41,7 @@ SynthDef(\pinkTest, {
 )
 
 (
-var chans = 5;
+var chans = 6;
 var dur = 0.5;
 Routine({
 	inf.do { |i|

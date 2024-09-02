@@ -53,13 +53,13 @@ Routine({
 			};
 
 			~bufferSynths[\playBuf1].do { |synth|
-				// synth.set(\amp, ~bufferData[1][startIndex].linlin(0, 1, -36.dbamp, -4.dbamp));
-				synth.set(\amp, currentPos.linlin(0, 1, -36.dbamp, -4.dbamp));
+				synth.set(\amp, ~bufferData[1][startIndex].linlin(0, 1, -36.dbamp, -4.dbamp));
+				// synth.set(\amp, currentPos.linlin(0, 1, -28.dbamp, -4.dbamp));
 			};
 
 			~bufferSynths[\playBuf2].do { |synth|
-				// synth.set(\amp, ~bufferData[1][startIndex].linlin(0, 1, -6.dbamp, -42.dbamp));
-				synth.set(\amp, currentPos.linlin(0, 1, -36.dbamp, -4.dbamp));
+				synth.set(\amp, ~bufferData[1][startIndex].linlin(0, 1, -6.dbamp, -42.dbamp));
+				// synth.set(\amp, currentPos.linlin(0, 1, -36.dbamp, -6.dbamp));
 			};
 
 			startIndex = startIndex + increment;

@@ -76,7 +76,7 @@ Buffer.freeAll;
 	loop {
 		~rt.reset;
 		~rt.play;
-		(~rate * rrand(5,15)).wait;
+		(~rate * rrand(5.0,10)).wait;
 	}
 });
 )

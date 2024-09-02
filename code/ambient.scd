@@ -19,7 +19,7 @@
 			\direction, direction,
 			\start, start,
 			\amp, amp,
-			\out, chan
+			// \out, chan
 		]);
 
 		~bufferSynths[path] = synth;
@@ -58,6 +58,8 @@
 	~playBuffer.value(\playBuf2, "/Users/ryanmillett/ARS_24/FB2_R.wav", amp: amp2, chan: 1);
 	~playBuffer.value(\playBuf2, "/Users/ryanmillett/ARS_24/FB2b_L.wav", amp: amp2, chan: 3);
 	~playBuffer.value(\playBuf2, "/Users/ryanmillett/ARS_24/FB2b_R.wav", amp: amp2, chan: 4);
+
+	Synth(\tumbler, [\amp, 0.3, \out, 5]);
 });
 )
 
