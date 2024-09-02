@@ -1,7 +1,6 @@
 
 (
 ~bufferSynths = Dictionary.new;
-
 ~playBuffer = {
 	|synthName, path, rate = 1.0, amp = 0.2|
 	var buffer, synth, start, direction;

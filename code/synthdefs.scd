@@ -7,7 +7,6 @@ SynthDef(\playBuf1, {
 
 	sig = PlayBuf.ar(1, \bufnum.kr(0), modulatedRate, startPos: \start.kr(0), doneAction: 2, loop: 1);
 
-
 	chain = FFT(LocalBuf(2048), sig);
 	binSwapped = PV_BinScramble(chain,
 		wipe: \wipe.kr(0.9, lag),
