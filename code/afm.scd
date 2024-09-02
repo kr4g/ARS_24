@@ -31,6 +31,7 @@ Buffer.freeAll;
 				s.bind{ ~plucks.set(\gate, 0); };
 
 				s.bind{ ~steam = Synth(\heat, [\amp, 0.8]); };
+				s.bind{ ~rumb = Synth(\rumbler, [\out, 5, \amp, 0.4]); };
 				// "BOING!".postln;
 			},
 			{
@@ -64,19 +65,23 @@ Buffer.freeAll;
 	};
 	// ~plucks.set(\gate, 0);
 	s.bind{ ~steam.set(\gate, 0); };
+	s.bind{ ~rumb.set(\gate, 0); };
 	buffer.free;
 	(~rate * rrand(2,10)).wait;
 });
 )
 
 (
-Routine({
+~afm_events = Routine({
 	loop {
 		~rt.reset;
 		~rt.play;
 		(~rate * rrand(5,15)).wait;
 	}
-}).play;
+});
 )
+
+~afm_events.play;
+
 
 ~rt.stop();

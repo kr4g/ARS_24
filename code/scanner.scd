@@ -53,20 +53,21 @@ Routine({
 			};
 
 			~bufferSynths[\playBuf1].do { |synth|
-				// synth.postln;
-				synth.set(\amp, ~bufferData[1][startIndex].linlin(0, 1, -48.dbamp, -6.dbamp));
+				// synth.set(\amp, ~bufferData[1][startIndex].linlin(0, 1, -36.dbamp, -4.dbamp));
+				synth.set(\amp, currentPos.linlin(0, 1, -36.dbamp, -4.dbamp));
 			};
 
 			~bufferSynths[\playBuf2].do { |synth|
-				synth.set(\amp, ~bufferData[1][startIndex].linlin(0, 1, -6.dbamp, -48.dbamp));
+				// synth.set(\amp, ~bufferData[1][startIndex].linlin(0, 1, -6.dbamp, -42.dbamp));
+				synth.set(\amp, currentPos.linlin(0, 1, -36.dbamp, -4.dbamp));
 			};
 
 			startIndex = startIndex + increment;
 
 			if ((increment > 0 and: { startIndex >= endIndex }) or:
 				(increment < 0 and: { startIndex <= endIndex })) {
-				"Target position reached.".postln;
 				currentPos = startIndex / (~bufferData[0].size - 1);
+				("Target position reached: " ++ currentPos).postln;
 				routine.stop;
 			};
 			scanInterval.wait;
@@ -76,4 +77,14 @@ Routine({
 	routine.play;
 };
 )
-~scanBuffer.value(0.1, 10);
+
+(
+~modAmb = Routine({
+	loop {
+		~scanBuffer.value(rrand(0.0,1), rrand(10,100));
+		rrand(10.0,45).wait;
+	};
+});
+)
+
+~modAmb.play;
