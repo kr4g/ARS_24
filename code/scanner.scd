@@ -1,5 +1,9 @@
 (
-var bufferPath = PathName.new(PathName.new(thisProcess.nowExecutingPath).parentPath ++ "buffers/calc_oscil_norm.wav");
+// var bufferPath = PathName.new(PathName.new(thisProcess.nowExecutingPath).parentPath ++ "buffers/calc_oscil_norm.wav");
+var currentPath = PathName.new(thisProcess.nowExecutingPath).pathOnly;
+var parentPath = PathName.new(currentPath).parentPath;
+var bufferPath = PathName.new(parentPath ++ "buffers/calc_oscil_norm.wav");
+
 var buffer = Buffer.read(s, bufferPath.fullPath);
 var ar = Array.new;
 var currentPos = 0;

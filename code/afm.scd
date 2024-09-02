@@ -2,7 +2,10 @@
 Buffer.freeAll;
 (
 ~rate = 20;
-~buffersPath = PathName.new(PathName.new(thisProcess.nowExecutingPath).parentPath ++ "Buffers/dopamine/spikes");
+// ~buffersPath = PathName.new(PathName.new(thisProcess.nowExecutingPath).parentPath ++ "buffers/dopamine/spikes");
+~currentPath = PathName.new(thisProcess.nowExecutingPath).pathOnly;
+~projectPath = PathName.new(~currentPath).parentPath;
+~buffersPath = PathName.new(~projectPath ++ "buffers/dopamine/spikes");
 
 ~rt = Routine({
 	var bufferPath = ~buffersPath.entries.select({ |file| file.extension == "wav" }).choose.fullPath;
@@ -31,7 +34,7 @@ Buffer.freeAll;
 				s.bind{ ~plucks.set(\gate, 0); };
 
 				s.bind{ ~steam = Synth(\heat, [\amp, 0.8]); };
-				s.bind{ ~rumb = Synth(\rumbler, [\out, 5, \amp, 0.4]); };
+				s.bind{ ~rumb = Synth(\rumbler, [\out, 5, \amp, 0.3]); };
 				// "BOING!".postln;
 			},
 			{
