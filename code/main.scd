@@ -25,13 +25,6 @@ thisProcess.openUDPPort(1010);
 thisProcess.openPorts;
 
 (
-OSCdef(\happyScore, { |msg|
-    var receivedValue = msg[1];
-    receivedValue.postln;
-}, '/ch1');
-)
-
-(
 SynthDef(\pinkTest, {
 	var sig;
 	sig = PinkNoise.ar(0.05);

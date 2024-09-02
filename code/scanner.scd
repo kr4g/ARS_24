@@ -79,10 +79,21 @@ Routine({
 )
 
 (
+OSCdef(\happyScore, { |msg|
+    var receivedValue = msg[1];
+    receivedValue.postln;
+	~scanBuffer.value(receivedValue, rrand(10, 100));
+}, '/ch1');
+)
+
+
+// TESTING
+(
 ~modAmb = Routine({
 	loop {
-		~scanBuffer.value(rrand(0.0,1), rrand(10,100));
-		rrand(10.0,45).wait;
+		"Scanning...".postln;
+		~scanBuffer.value(rrand(0.0, 1), rrand(10, 100));
+		rrand(20.0, 90).wait;
 	};
 });
 )

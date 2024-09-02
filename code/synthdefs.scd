@@ -7,8 +7,6 @@ SynthDef(\playBuf1, {
 
 	sig = PlayBuf.ar(1, \bufnum.kr(0), modulatedRate, startPos: \start.kr(0), doneAction: 2, loop: 1);
 
-	ampLFO = SinOsc.ar(ExpRand(0.0667, 0.167), \phase.kr(1.5pi)).range(0, 1);
-	sig = sig * ampLFO;
 
 	chain = FFT(LocalBuf(2048), sig);
 	binSwapped = PV_BinScramble(chain,
@@ -35,6 +33,8 @@ SynthDef(\playBuf1, {
 	sig = LPF.ar(sig, SinOsc.kr(ExpRand(0.03, 0.17)).range(500, \maxLPF.kr(2000, lag)));
 	sig = sig * EnvGen.kr(Env.asr(2, 1, 2), \gate.kr(1), doneAction: 2) * \amp.kr(0.2, lag);
 	sig = PanAz.ar(5, sig, LFNoise1.kr(SinOsc.kr(ExpRand(0.067, 0.333)).range(0.5, 1.5)), width: 2, orientation: 0.5);
+	ampLFO = SinOsc.ar(LFNoise1.kr(ExpRand(0.1, 0.167)).range(0.0667, 0.333), 1.5pi).range(0, 1);
+	sig = sig * ampLFO;
 	sig = Limiter.ar(sig, \limitLevel.kr(0.8), \releaseTime.kr(0.01));
 	Out.ar(\out.kr(0), sig);
 }).add;
@@ -47,8 +47,6 @@ SynthDef(\playBuf2, {
 
 	sig = PlayBuf.ar(1, \bufnum.kr(0), modulatedRate, startPos: \start.kr(0), doneAction: 2, loop: 1);
 
-	ampLFO = SinOsc.ar(ExpRand(0.0667, 0.167), \phase.kr(1.5pi)).range(0, 1);
-	sig = sig * ampLFO;
 
 	feedback = LocalIn.ar(1);
 	pitchRange = LFNoise1.ar(LFNoise0.kr(\pitchMod.kr(0.5, lag)).range(0.2, 0.7)).range(\pitchModMin.kr(0.333, lag), \pitchModMax.kr(1.667, lag));
@@ -67,6 +65,8 @@ SynthDef(\playBuf2, {
 	sig = sig + feedback;
 	sig = sig * EnvGen.kr(Env.asr(2, 1, 2), \gate.kr(1), doneAction: 2) * \amp.kr(0.2, lag) * -3.dbamp;
 	sig = PanAz.ar(5, sig, LFNoise1.kr(SinOsc.kr(ExpRand(0.067, 0.333)).range(0.5, 1.5)), width: 2, orientation: 0.5);
+	ampLFO = SinOsc.ar(LFNoise1.kr(ExpRand(0.1, 0.167)).range(0.0667, 0.333), 1.5pi).range(0, 1);
+	sig = sig * ampLFO;
 	sig = Limiter.ar(sig, \limitLevel.kr(0.8), \releaseTime.kr(0.01));
 	Out.ar(\out.kr(0), sig);
 }).add;
@@ -107,10 +107,8 @@ SynthDef(\boing, {
 
 SynthDef(\heat, {
 	var sig, detunes, panPositions;
-
 	detunes = [0.33.midiratio, 0.67.midiratio];
 	panPositions = detunes.collect { LFNoise1.kr(ExpRand(0.3, 0.9)) };
-
 	sig = VarSaw.ar(50 * detunes, width: LFNoise1.ar(ExpRand(1.1, 2.6)).range(0.15, 0.75));
 	sig = HPF.ar(sig, \hpfFreq.kr(1000, \hpfLag.kr(0.0)));
 	sig = sig * LFNoise1.ar(ExpRand(1.3, 2.6)).range(0, 1) * \amp.kr(1);

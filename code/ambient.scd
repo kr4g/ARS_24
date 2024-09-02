@@ -3,7 +3,7 @@
 ~bufferSynths = Dictionary.new;
 
 ~playBuffer = {
-	|synthName, path, rate = 1.0, amp = 0.2, chan=0|
+	|synthName, path, rate = 1.0, amp = 0.2|
 	var buffer, synth, start, direction;
 
 	{
@@ -49,17 +49,17 @@
 	s.bind{ ~fx = Synth.tail(nil, \verb); };
 	// s.bind{ ~fx = Synth.tail(nil, \hall); };
 
-	~playBuffer.value(\playBuf1, "/Users/ryanmillett/ARS_24/FB1_L.wav", amp: amp1, chan: 0);
-	~playBuffer.value(\playBuf1, "/Users/ryanmillett/ARS_24/FB1_R.wav", amp: amp1, chan: 1);
-	~playBuffer.value(\playBuf1, "/Users/ryanmillett/ARS_24/FB1b_L.wav", amp: amp1, chan: 3);
-	~playBuffer.value(\playBuf1, "/Users/ryanmillett/ARS_24/FB1b_R.wav", amp: amp1, chan: 4);
+	~playBuffer.value(\playBuf1, "/Users/ryanmillett/ARS_24/FB1_L.wav", amp: amp1);
+	~playBuffer.value(\playBuf1, "/Users/ryanmillett/ARS_24/FB1_R.wav", amp: amp1);
+	~playBuffer.value(\playBuf1, "/Users/ryanmillett/ARS_24/FB1b_L.wav", amp: amp1);
+	~playBuffer.value(\playBuf1, "/Users/ryanmillett/ARS_24/FB1b_R.wav", amp: amp1);
 
-	~playBuffer.value(\playBuf2, "/Users/ryanmillett/ARS_24/FB2_L.wav", amp: amp2, chan: 0);
-	~playBuffer.value(\playBuf2, "/Users/ryanmillett/ARS_24/FB2_R.wav", amp: amp2, chan: 1);
-	~playBuffer.value(\playBuf2, "/Users/ryanmillett/ARS_24/FB2b_L.wav", amp: amp2, chan: 3);
-	~playBuffer.value(\playBuf2, "/Users/ryanmillett/ARS_24/FB2b_R.wav", amp: amp2, chan: 4);
+	~playBuffer.value(\playBuf2, "/Users/ryanmillett/ARS_24/FB2_L.wav", amp: amp2);
+	~playBuffer.value(\playBuf2, "/Users/ryanmillett/ARS_24/FB2_R.wav", amp: amp2);
+	~playBuffer.value(\playBuf2, "/Users/ryanmillett/ARS_24/FB2b_L.wav", amp: amp2);
+	~playBuffer.value(\playBuf2, "/Users/ryanmillett/ARS_24/FB2b_R.wav", amp: amp2);
 
-	Synth(\tumbler, [\amp, 0.3, \out, 5]);
+	Synth(\tumbler, [\amp, 0.2, \out, 5]);
 });
 )
 

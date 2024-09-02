@@ -1,7 +1,7 @@
 
 Buffer.freeAll;
-~rate = 20;
 (
+~rate = 20;
 ~buffersPath = PathName.new(PathName.new(thisProcess.nowExecutingPath).parentPath ++ "Buffers/dopamine/spikes");
 
 ~rt = Routine({
