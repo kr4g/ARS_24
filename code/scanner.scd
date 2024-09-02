@@ -1,5 +1,6 @@
 (
 // var bufferPath = PathName.new(PathName.new(thisProcess.nowExecutingPath).parentPath ++ "buffers/calc_oscil_norm.wav");
+
 var currentPath = PathName.new(thisProcess.nowExecutingPath).pathOnly;
 var parentPath = PathName.new(currentPath).parentPath;
 var bufferPath = PathName.new(parentPath ++ "buffers/calc_oscil_norm.wav");
@@ -96,7 +97,7 @@ OSCdef(\happyScore, { |msg|
 	loop {
 		"Scanning...".postln;
 		~scanBuffer.value(rrand(0.0, 1), rrand(10, 100));
-		rrand(20.0, 90).wait;
+		rrand(30, 90).wait;
 	};
 });
 )

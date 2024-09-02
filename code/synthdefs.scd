@@ -24,7 +24,6 @@ SynthDef(\playBuf1, {
 	);
 
 	// sig = FreqShift.ar(sig, freq: LFNoise1.kr(ExpRand(0.1, 0.167)).range(-350, 350));
-
 	sig = sig + (feedback * 0.5);
 
 	LocalOut.ar(sig);
