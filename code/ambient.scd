@@ -40,7 +40,6 @@
 };
 )
 
-// s.record("/Users/ryanmillett/ARS_24/ambience3.wav", numChannels:2, duration: 60*10);
 (
 ~ambience = Routine({
 	var amp1 = -20.dbamp;
