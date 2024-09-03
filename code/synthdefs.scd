@@ -29,7 +29,7 @@ SynthDef(\playBuf1, {
 	LocalOut.ar(sig);
 
 	sig = LPF.ar(sig, SinOsc.kr(ExpRand(0.03, 0.17)).range(500, \maxLPF.kr(2000, lag)));
-	sig = sig * EnvGen.kr(Env.asr(2, 1, 2), \gate.kr(1), doneAction: 2) * \amp.kr(0.2, lag);
+	sig = sig * EnvGen.kr(Env.asr(2, 1, 2), \gate.kr(1), doneAction: 2) * \amp.kr(0.2, \ampLag.kr(5));
 	sig = PanAz.ar(5, sig, LFNoise1.kr(SinOsc.kr(ExpRand(0.067, 0.333)).range(0.5, 1.5)), width: 2, orientation: 0.5);
 	ampLFO = SinOsc.ar(LFNoise1.kr(ExpRand(0.1, 0.167)).range(0.0667, 0.333), 1.5pi).range(0, 1);
 	sig = sig * ampLFO;
@@ -61,7 +61,7 @@ SynthDef(\playBuf2, {
 	LocalOut.ar(feedback * 0.5);
 
 	sig = sig + feedback;
-	sig = sig * EnvGen.kr(Env.asr(2, 1, 2), \gate.kr(1), doneAction: 2) * \amp.kr(0.2, lag) * -3.dbamp;
+	sig = sig * EnvGen.kr(Env.asr(2, 1, 2), \gate.kr(1), doneAction: 2) * \amp.kr(0.2, \ampLag.kr(5)) * -3.dbamp;
 	sig = PanAz.ar(5, sig, LFNoise1.kr(SinOsc.kr(ExpRand(0.067, 0.333)).range(0.5, 1.5)), width: 2, orientation: 0.5);
 	ampLFO = SinOsc.ar(LFNoise1.kr(ExpRand(0.1, 0.167)).range(0.0667, 0.333), 1.5pi).range(0, 1);
 	sig = sig * ampLFO;
@@ -134,19 +134,21 @@ SynthDef(\tumbler, {
 }).add;
 
 SynthDef(\verb, {
-	var sig;
+	var sig, ampEnv;
 	sig = In.ar(0, 1);
 	sig = FreeVerb.ar(sig, \mix.kr(0.8), \room.kr(0.93), \damp.kr(0.01));
 	sig = Limiter.ar(sig, 0.8, 0.01);
+	// ampEnv = Amplitude.kr(sig);
+	// SendReply.kr(Impulse.kr(10), "/ampEnv", [ampEnv]);
 	Out.ar(\out.kr(0), sig);
 }).add;
 
-SynthDef(\hall, {
-	var sig;
-	sig = In.ar(0, 1);
-	sig = JPverb.ar(sig, size: 2);
-	sig = SplayAz.ar(5, sig, spread: 5, width: 5);
-	sig = Limiter.ar(sig, 0.8, 0.01);
-	Out.ar(\out.kr(0), sig);
-}).add;
+// SynthDef(\hall, {
+// 	var sig;
+// 	sig = In.ar(0, 1);
+// 	sig = JPverb.ar(sig, size: 2);
+// 	sig = SplayAz.ar(5, sig, spread: 5, width: 5);
+// 	sig = Limiter.ar(sig, 0.8, 0.01);
+// 	Out.ar(\out.kr(0), sig);
+// }).add;
 )

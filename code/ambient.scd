@@ -64,6 +64,16 @@
 
 ~ambience.play;
 
+
+// (
+// OSCdef(\forwardAmp, { |msg|
+// 	var ampVal;
+// 	ampVal = msg[3];
+// 	NetAddr("10.78.206.89", 9999).sendMsg("/ampEnv", ampVal);
+// }, "/ampEnv").add;
+// )
+
+
 // TESTING
 // (
 // Routine({

@@ -10,6 +10,7 @@
 	var bufferPath = ~buffersPath.entries.select({ |file| file.extension == "wav" }).choose.fullPath;
 	var buffer = Buffer.read(s, bufferPath);
 	var ar = Array.new;
+	var plucks, steam, rumb;
 	// ~ar = Array.new;
 	s.sync;
 	bufferPath.postln;
@@ -22,31 +23,34 @@
 	});
 	s.sync;
 
-	s.bind{ ~plucks = Synth(\plucks, [\amp, -8.dbamp]); };
+	s.bind{ plucks = Synth(\plucks, [\amp, -8.dbamp]); };
 
 	ar[0].size.do { |i|
 		var val = ar[2][i];
 		var interval = ~rate / ar[0].size;
 		var freq=500, coef=0.7, decay=0.5;
 
-		NetAddr("0.0.0.0", 1001).sendMsg("/afm_pos", ar[1][i]);
-		NetAddr("0.0.0.0", 1001).sendMsg("/afm_dx", ar[3][i]);
+		NetAddr("10.78.206.89", 9999).sendMsg("/afm_pos", ar[1][i]);
+		NetAddr("10.78.206.89", 9999).sendMsg("/afm_dx", ar[3][i]);
+
+		NetAddr("127.0.0.1", 6000).sendMsg("/afm_pos", ar[1][i]);
+		NetAddr("127.0.0.1", 6000).sendMsg("/afm_dx", ar[3][i]);
 
 		if (i == ar[0].minIndex,
 			{
 				s.bind{ Synth(\boing, [\amp, -8.dbamp]); };
-				s.bind{ ~plucks.set(\gate, 0); };
+				s.bind{ plucks.set(\gate, 0); };
 
-				s.bind{ ~steam = Synth(\heat, [\amp, 0.8]); };
-				s.bind{ ~rumb = Synth(\rumbler, [\out, 5, \amp, 0.3]); };
+				s.bind{ steam = Synth(\heat, [\amp, 0.8]); };
+				s.bind{ rumb = Synth(\rumbler, [\out, 5, \amp, 0.3]); };
 
-				NetAddr("0.0.0.0", 1001).sendMsg("/boing", 1);
+				NetAddr("10.78.206.89", 9999).sendMsg("/boing", 1);
 			},
 			{
 				if (i < ar[0].minIndex,
 					{
 						s.bind{
-							~plucks.set(
+							plucks.set(
 								// \freq, val.linexp(0.001, 1, 500, 900),
 								// \freqLag, interval*0.8,
 								\impRate, val.pow(0.75).linexp(0.001, 1, 5, 30),
@@ -58,7 +62,7 @@
 					},
 					{
 						s.bind{
-							~steam.set(
+							steam.set(
 								\hpfFreq, ar[1][i].linexp(0,1,200,1000),
 								\hpfLag, interval,
 								\amp, ar[3][i].linlin(ar[3].minItem, ar[3].maxItem, 0, 1),
@@ -72,8 +76,8 @@
 		(interval).wait;
 	};
 	// ~plucks.set(\gate, 0);
-	s.bind{ ~steam.set(\gate, 0); };
-	s.bind{ ~rumb.set(\gate, 0); };
+	s.bind{ steam.set(\gate, 0); };
+	s.bind{ rumb.set(\gate, 0); };
 	buffer.free;
 	// (~rate * rrand(2,10)).wait;
 });
@@ -91,4 +95,4 @@
 )
 
 ~afm_events.play;
-// ~ar.plot
+// ~afm_events.stop;

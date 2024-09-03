@@ -26,7 +26,7 @@ Routine({
 	if (routine.notNil and: { routine.isPlaying }) {
 		routine.stop;
 	};
-
+	// "TEST".postln;
 	routine = Routine({
 		var startIndex, endIndex, increment, scanInterval, avg, mult;
 
@@ -39,11 +39,14 @@ Routine({
 			(increment > 0 and: { startIndex <= endIndex }) or:
 			(increment < 0 and: { startIndex >= endIndex });
 		}, {
+
+
 			// ("Position: " ++ (startIndex / (~bufferData[0].size - 1)).asFloat ++
 			// 	" Channel 1: " ++ ~bufferData[0][startIndex] ++
 			// " Channel 2: " ++ ~bufferData[1][startIndex]).postln;
 
-			NetAddr("0.0.0.0", 1001).sendMsg("/immune", ~bufferData[0][startIndex]);
+			NetAddr("10.78.206.89", 9999).sendMsg("/immune", ~bufferData[0][startIndex]);
+			NetAddr("127.0.0.1", 6000).sendMsg("/immune", ~bufferData[0][startIndex]);
 
 			avg = 0.5*(~bufferData[0][startIndex] + ~bufferData[1][startIndex]);
 			mult = ~bufferData[0][startIndex] * ~bufferData[1][startIndex];
@@ -51,34 +54,34 @@ Routine({
 			~bufferSynths[\all].do { |synth|
 				synth.set(
 					\lag, scanInterval,
-					\wipe, ~bufferData[0][startIndex],
-					\width, avg,
+					\wipe, rrand(0.0,~bufferData[0][startIndex].pow(0.5)),
+					\width, rrand(0.0,~bufferData[0][startIndex]).pow(0.5),
 					\rateMod, ~bufferData[0][startIndex].linlin(0, 1, 0.01, 3.0),
 					\direction, increment,
-					\pitchMod, mult.linexp(0, 1, 0.07, 5.7),
+					\pitchMod, ~bufferData[0][startIndex].linexp(0, 1, 0.07, 5.7),
 					\pitchModMin, ~bufferData[0][startIndex].linexp(0, 1, 0.5, 0.96),
 					\pitchModMax, ~bufferData[0][startIndex].linlin(0, 1, 1.0, 1.83),
 					\rateModMin, ~bufferData[0][startIndex].linlin(0, 1, 0.5, 0.96),
-					\rateModMax, ~bufferData[0][startIndex].linlin(0, 1, 1.0, 1.67),
+					\rateModMax, ~bufferData[0][startIndex].pow(0.5).linlin(0, 1, 1.0, 1.67),
 				);
 			};
 
-			~bufferSynths[\playBuf1].do { |synth|
-				synth.set(\amp, ~bufferData[0][startIndex].linlin(0, 1, -36.dbamp, -4.dbamp));
-				// synth.set(\amp, currentPos.linlin(0, 1, -28.dbamp, -4.dbamp));
-			};
-
-			~bufferSynths[\playBuf2].do { |synth|
-				synth.set(\amp, ~bufferData[0][startIndex].linlin(0, 1, -6.dbamp, -42.dbamp));
-				// synth.set(\amp, currentPos.linlin(0, 1, -36.dbamp, -6.dbamp));
-			};
+			// ~bufferSynths[\playBuf1].do { |synth|
+			// 	// synth.set(\amp, ~bufferData[0][startIndex].linlin(0, 1, -40.dbamp, -6.dbamp));
+			// 	synth.set(\amp, (startIndex / (~bufferData[0].size - 1)).linlin(0, 1, -31.dbamp, -4.dbamp));
+			// };
+			//
+			// ~bufferSynths[\playBuf2].do { |synth|
+			// 	// synth.set(\amp, ~bufferData[0][startIndex].linlin(0, 1, -4.dbamp, -31.dbamp));
+			// 	synth.set(\amp, (startIndex / (~bufferData[0].size - 1)).linlin(0, 1, -4.dbamp, -31.dbamp));
+			// };
 
 			startIndex = startIndex + increment;
 
 			if ((increment > 0 and: { startIndex >= endIndex }) or:
 				(increment < 0 and: { startIndex <= endIndex })) {
 				currentPos = startIndex / (~bufferData[0].size - 1);
-				("Target position reached: " ++ currentPos).postln;
+				("Target position reached. Val: " ++ ~bufferData[0][startIndex]).postln;
 				routine.stop;
 			};
 			scanInterval.wait;
@@ -89,25 +92,51 @@ Routine({
 };
 )
 
-~bufferData[0].plot
+// ~bufferData[0].plot
+
+/*(
+OSCdef(\happyScore, { |msg|
+var receivedValue = msg[1];
+receivedValue.postln;
+~scanBuffer.value(receivedValue, rrand(10, 100));
+}, '/ch1');
+)*/
 
 (
-OSCdef(\happyScore, { |msg|
-	var receivedValue = msg[1];
-	receivedValue.postln;
-	~scanBuffer.value(receivedValue, rrand(10, 100));
-}, '/ch1');
+~modPos = Routine({
+	loop {
+		var target = rrand(0.0, 1.0);
+		var time = exprand(30.0, 120);
+		var ampLag = time.linlin(30.0, 120, 5.0, 15);
+
+		~bufferSynths[\playBuf1].do { |synth|
+			synth.set(\amp, target.linlin(0, 1, -31.dbamp, -4.dbamp), \ampLag, ampLag);
+		};
+
+		~bufferSynths[\playBuf2].do { |synth|
+			synth.set(\amp, target.linlin(0, 1, -4.dbamp, -31.dbamp), \ampLag, ampLag);
+		};
+
+		time.wait;
+	};
+});
 )
 
-// TESTING
+~modPos.play;
+// ~modPos.stop;
+
+
 (
 ~modAmb = Routine({
 	loop {
-		"Scanning...".postln;
-		~scanBuffer.value(rrand(0.0, 1), rrand(10, 100));
-		rrand(30, 90).wait;
+		var target = rrand(0.0, 1);
+		var rate = rrand(10, 100);
+		("Target Pos: " ++ target ++ ". Scanning...").postln;
+		~scanBuffer.value(target, rate);
+		rrand(30, rate.linlin(10,100,90,180)).wait;
 	};
 });
 )
 
 ~modAmb.play;
+// ~modAmb.stop;
