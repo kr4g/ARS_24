@@ -10,12 +10,14 @@
 	var bufferPath = ~buffersPath.entries.select({ |file| file.extension == "wav" }).choose.fullPath;
 	var buffer = Buffer.read(s, bufferPath);
 	var ar = Array.new;
+	// ~ar = Array.new;
 	s.sync;
 	bufferPath.postln;
 	buffer.loadToFloatArray(action: { |array|
 		buffer.numChannels.do { |i|
 			var channelData = array.clump(buffer.numChannels).collect({ |chanVals| chanVals[i] });
-			ar = ar.add(channelData);
+			ar = ar.add(channelData.linlin(channelData.minItem, channelData.maxItem, 0, 1));
+			// ~ar = ~ar.add(channelData.linlin(channelData.minItem, channelData.maxItem, 0, 1));
 		};
 	});
 	s.sync;
@@ -26,7 +28,10 @@
 		var val = ar[2][i];
 		var interval = ~rate / ar[0].size;
 		var freq=500, coef=0.7, decay=0.5;
-		// ar[0][i].postln;
+
+		NetAddr("0.0.0.0", 1001).sendMsg("/afm_pos", ar[1][i]);
+		NetAddr("0.0.0.0", 1001).sendMsg("/afm_dx", ar[3][i]);
+
 		if (i == ar[0].minIndex,
 			{
 				s.bind{ Synth(\boing, [\amp, -8.dbamp]); };
@@ -34,7 +39,8 @@
 
 				s.bind{ ~steam = Synth(\heat, [\amp, 0.8]); };
 				s.bind{ ~rumb = Synth(\rumbler, [\out, 5, \amp, 0.3]); };
-				// "BOING!".postln;
+
+				NetAddr("0.0.0.0", 1001).sendMsg("/boing", 1);
 			},
 			{
 				if (i < ar[0].minIndex,
@@ -69,21 +75,20 @@
 	s.bind{ ~steam.set(\gate, 0); };
 	s.bind{ ~rumb.set(\gate, 0); };
 	buffer.free;
-	(~rate * rrand(2,10)).wait;
+	// (~rate * rrand(2,10)).wait;
 });
 )
+
 
 (
 ~afm_events = Routine({
 	loop {
 		~rt.reset;
 		~rt.play;
-		(~rate * rrand(5.0,10)).wait;
+		(~rate * rrand(5, 10)).wait;
 	}
 });
 )
 
 ~afm_events.play;
-
-~rt.stop();
-
+// ~ar.plot

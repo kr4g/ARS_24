@@ -28,7 +28,7 @@ Routine({
 	};
 
 	routine = Routine({
-		var startIndex, endIndex, increment, scanInterval;
+		var startIndex, endIndex, increment, scanInterval, avg, mult;
 
 		startIndex = (currentPos * (~bufferData[0].size - 1)).asInteger;
 		endIndex = (targetPos * (~bufferData[0].size - 1)).asInteger;
@@ -42,28 +42,34 @@ Routine({
 			// ("Position: " ++ (startIndex / (~bufferData[0].size - 1)).asFloat ++
 			// 	" Channel 1: " ++ ~bufferData[0][startIndex] ++
 			// " Channel 2: " ++ ~bufferData[1][startIndex]).postln;
+
+			NetAddr("0.0.0.0", 1001).sendMsg("/immune", ~bufferData[0][startIndex]);
+
+			avg = 0.5*(~bufferData[0][startIndex] + ~bufferData[1][startIndex]);
+			mult = ~bufferData[0][startIndex] * ~bufferData[1][startIndex];
+
 			~bufferSynths[\all].do { |synth|
 				synth.set(
 					\lag, scanInterval,
 					\wipe, ~bufferData[0][startIndex],
-					\width, ~bufferData[1][startIndex],
+					\width, avg,
 					\rateMod, ~bufferData[0][startIndex].linlin(0, 1, 0.01, 3.0),
 					\direction, increment,
-					\pitchMod, ~bufferData[1][startIndex].linexp(0, 1, 0.07, 5.7),
+					\pitchMod, mult.linexp(0, 1, 0.07, 5.7),
 					\pitchModMin, ~bufferData[0][startIndex].linexp(0, 1, 0.5, 0.96),
-					\pitchModMax, ~bufferData[1][startIndex].linlin(0, 1, 1.0, 1.83),
+					\pitchModMax, ~bufferData[0][startIndex].linlin(0, 1, 1.0, 1.83),
 					\rateModMin, ~bufferData[0][startIndex].linlin(0, 1, 0.5, 0.96),
-					\rateModMax, ~bufferData[1][startIndex].linlin(0, 1, 1.0, 1.67),
+					\rateModMax, ~bufferData[0][startIndex].linlin(0, 1, 1.0, 1.67),
 				);
 			};
 
 			~bufferSynths[\playBuf1].do { |synth|
-				synth.set(\amp, ~bufferData[1][startIndex].linlin(0, 1, -36.dbamp, -4.dbamp));
+				synth.set(\amp, ~bufferData[0][startIndex].linlin(0, 1, -36.dbamp, -4.dbamp));
 				// synth.set(\amp, currentPos.linlin(0, 1, -28.dbamp, -4.dbamp));
 			};
 
 			~bufferSynths[\playBuf2].do { |synth|
-				synth.set(\amp, ~bufferData[1][startIndex].linlin(0, 1, -6.dbamp, -42.dbamp));
+				synth.set(\amp, ~bufferData[0][startIndex].linlin(0, 1, -6.dbamp, -42.dbamp));
 				// synth.set(\amp, currentPos.linlin(0, 1, -36.dbamp, -6.dbamp));
 			};
 
@@ -83,10 +89,12 @@ Routine({
 };
 )
 
+~bufferData[0].plot
+
 (
 OSCdef(\happyScore, { |msg|
-    var receivedValue = msg[1];
-    receivedValue.postln;
+	var receivedValue = msg[1];
+	receivedValue.postln;
 	~scanBuffer.value(receivedValue, rrand(10, 100));
 }, '/ch1');
 )
