@@ -21,14 +21,14 @@ s.newBusAllocators;
 // ServerQuit.removeAll;
 s.reboot;
 )
-Synth(\default)
 
-
+(
 thisProcess.openUDPPort(1010);
 thisProcess.openUDPPort(9000);
 thisProcess.openUDPPort(6000);
 thisProcess.openUDPPort(9999);
 thisProcess.openPorts;
+)
 
 (
 SynthDef(\pinkTest, {

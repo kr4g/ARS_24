@@ -41,7 +41,7 @@
 				s.bind{ Synth(\boing, [\amp, -8.dbamp]); };
 				s.bind{ plucks.set(\gate, 0); };
 
-				s.bind{ steam = Synth(\heat, [\amp, 0.8]); };
+				s.bind{ steam = Synth(\heat, [\amp, 0.7]); };
 				s.bind{ rumb = Synth(\rumbler, [\out, 5, \amp, 0.3]); };
 
 				NetAddr("10.78.206.89", 9999).sendMsg("/boing", 1);
@@ -82,7 +82,6 @@
 	// (~rate * rrand(2,10)).wait;
 });
 )
-
 
 (
 ~afm_events = Routine({

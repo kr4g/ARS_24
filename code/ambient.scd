@@ -64,39 +64,10 @@
 
 ~ambience.play;
 
-
 // (
 // OSCdef(\forwardAmp, { |msg|
 // 	var ampVal;
 // 	ampVal = msg[3];
 // 	NetAddr("10.78.206.89", 9999).sendMsg("/ampEnv", ampVal);
 // }, "/ampEnv").add;
-// )
-
-
-// TESTING
-// (
-// Routine({
-// 	loop {
-// 		var time = rrand(5, 15);
-// 		~bufferSynths.do { |synth|
-// 			synth.set(
-// 				\lag, time,
-// 				\wipe, rrand(0.1, 0.9),
-// 				\width, rrand(0.1, 0.9),
-// 				\rateMod, exprand(0.001, 1.0),
-// 				\direction, [-1,1].choose,
-// 				\pitchMod, exprand(0.07, 5.7),
-// 				\pitchModMin, rrand(0.5, 0.96),
-// 				\pitchModMax, rrand(1.0, 1.83),
-// 				\rateModMin, rrand(0.5, 0.96),
-// 				\rateModMax, rrand(1.0, 1.67),
-// 				\maxLPF, rrand(1000, 5000),
-// 				\amp, rrand(-36.dbamp, -8.dbamp)
-// 			);
-// 			exprand(1, 5).wait;
-// 		};
-// 		time.wait;
-// 	};
-// }).play;
 // )

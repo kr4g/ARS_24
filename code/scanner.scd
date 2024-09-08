@@ -1,6 +1,5 @@
 (
 // var bufferPath = PathName.new(PathName.new(thisProcess.nowExecutingPath).parentPath ++ "buffers/calc_oscil_norm.wav");
-
 var currentPath = PathName.new(thisProcess.nowExecutingPath).pathOnly;
 var parentPath = PathName.new(currentPath).parentPath;
 var bufferPath = PathName.new(parentPath ++ "buffers/calc_oscil_norm.wav");
@@ -26,7 +25,7 @@ Routine({
 	if (routine.notNil and: { routine.isPlaying }) {
 		routine.stop;
 	};
-	// "TEST".postln;
+
 	routine = Routine({
 		var startIndex, endIndex, increment, scanInterval, avg, mult;
 
@@ -39,7 +38,6 @@ Routine({
 			(increment > 0 and: { startIndex <= endIndex }) or:
 			(increment < 0 and: { startIndex >= endIndex });
 		}, {
-
 
 			// ("Position: " ++ (startIndex / (~bufferData[0].size - 1)).asFloat ++
 			// 	" Channel 1: " ++ ~bufferData[0][startIndex] ++
@@ -62,19 +60,9 @@ Routine({
 					\pitchModMin, ~bufferData[0][startIndex].linexp(0, 1, 0.5, 0.96),
 					\pitchModMax, ~bufferData[0][startIndex].linlin(0, 1, 1.0, 1.83),
 					\rateModMin, ~bufferData[0][startIndex].linlin(0, 1, 0.5, 0.96),
-					\rateModMax, ~bufferData[0][startIndex].pow(0.5).linlin(0, 1, 1.0, 1.67),
+					\rateModMax, ~bufferData[0][startIndex].linlin(0, 1, 1.0, 1.67),
 				);
 			};
-
-			// ~bufferSynths[\playBuf1].do { |synth|
-			// 	// synth.set(\amp, ~bufferData[0][startIndex].linlin(0, 1, -40.dbamp, -6.dbamp));
-			// 	synth.set(\amp, (startIndex / (~bufferData[0].size - 1)).linlin(0, 1, -31.dbamp, -4.dbamp));
-			// };
-			//
-			// ~bufferSynths[\playBuf2].do { |synth|
-			// 	// synth.set(\amp, ~bufferData[0][startIndex].linlin(0, 1, -4.dbamp, -31.dbamp));
-			// 	synth.set(\amp, (startIndex / (~bufferData[0].size - 1)).linlin(0, 1, -4.dbamp, -31.dbamp));
-			// };
 
 			startIndex = startIndex + increment;
 
@@ -107,7 +95,7 @@ receivedValue.postln;
 	loop {
 		var target = rrand(0.0, 1.0);
 		var time = exprand(30.0, 120);
-		var ampLag = time.linlin(30.0, 120, 5.0, 15);
+		var ampLag = time.linlin(30.0, 120, 15.0, 25);
 
 		~bufferSynths[\playBuf1].do { |synth|
 			synth.set(\amp, target.linlin(0, 1, -31.dbamp, -4.dbamp), \ampLag, ampLag);
@@ -117,6 +105,8 @@ receivedValue.postln;
 			synth.set(\amp, target.linlin(0, 1, -4.dbamp, -31.dbamp), \ampLag, ampLag);
 		};
 
+		("Ratio: " ++ target).postln;
+
 		time.wait;
 	};
 });
@@ -125,15 +115,15 @@ receivedValue.postln;
 ~modPos.play;
 // ~modPos.stop;
 
-
 (
 ~modAmb = Routine({
 	loop {
 		var target = rrand(0.0, 1);
 		var rate = rrand(10, 100);
-		("Target Pos: " ++ target ++ ". Scanning...").postln;
+		// ("Target Pos: " ++ target ++ ". Scanning...").postln;
+		"Scanning...".postln;
 		~scanBuffer.value(target, rate);
-		rrand(30, rate.linlin(10,100,90,180)).wait;
+		rrand(30, rate.linlin(10, 100, 90, 180)).wait;
 	};
 });
 )

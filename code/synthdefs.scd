@@ -24,6 +24,7 @@ SynthDef(\playBuf1, {
 	);
 
 	// sig = FreqShift.ar(sig, freq: LFNoise1.kr(ExpRand(0.1, 0.167)).range(-350, 350));
+
 	sig = sig + (feedback * 0.5);
 
 	LocalOut.ar(sig);
@@ -31,7 +32,7 @@ SynthDef(\playBuf1, {
 	sig = LPF.ar(sig, SinOsc.kr(ExpRand(0.03, 0.17)).range(500, \maxLPF.kr(2000, lag)));
 	sig = sig * EnvGen.kr(Env.asr(2, 1, 2), \gate.kr(1), doneAction: 2) * \amp.kr(0.2, \ampLag.kr(5));
 	sig = PanAz.ar(5, sig, LFNoise1.kr(SinOsc.kr(ExpRand(0.067, 0.333)).range(0.5, 1.5)), width: 2, orientation: 0.5);
-	ampLFO = SinOsc.ar(LFNoise1.kr(ExpRand(0.1, 0.167)).range(0.0667, 0.333), 1.5pi).range(0, 1);
+	ampLFO = SinOsc.ar(LFNoise1.kr(ExpRand(0.05, 0.067)).range(0.0333, 0.167), 1.5pi).range(0, 1);
 	sig = sig * ampLFO;
 	sig = Limiter.ar(sig, \limitLevel.kr(0.8), \releaseTime.kr(0.01));
 	Out.ar(\out.kr(0), sig);
@@ -45,7 +46,6 @@ SynthDef(\playBuf2, {
 
 	sig = PlayBuf.ar(1, \bufnum.kr(0), modulatedRate, startPos: \start.kr(0), doneAction: 2, loop: 1);
 
-
 	feedback = LocalIn.ar(1);
 	pitchRange = LFNoise1.ar(LFNoise0.kr(\pitchMod.kr(0.5, lag)).range(0.2, 0.7)).range(\pitchModMin.kr(0.333, lag), \pitchModMax.kr(1.667, lag));
 	feedback = PitchShift.ar(feedback,
@@ -55,7 +55,7 @@ SynthDef(\playBuf2, {
 		timeDispersion: ExpRand(0.01, 0.1)
 	);
 	comb = CombN.ar((feedback + (sig * 0.5)).tanh, maxdelaytime: 0.9, delaytime: LFNoise0.kr(0.1).range(0.3,0.9), decaytime: 3);
-	//
+
 	feedback = LPF.ar(comb, LFNoise0.kr(ExpRand(0.1, 0.3)).range(900, \maxLPF.kr(2500)));
 
 	LocalOut.ar(feedback * 0.5);
@@ -63,7 +63,7 @@ SynthDef(\playBuf2, {
 	sig = sig + feedback;
 	sig = sig * EnvGen.kr(Env.asr(2, 1, 2), \gate.kr(1), doneAction: 2) * \amp.kr(0.2, \ampLag.kr(5)) * -3.dbamp;
 	sig = PanAz.ar(5, sig, LFNoise1.kr(SinOsc.kr(ExpRand(0.067, 0.333)).range(0.5, 1.5)), width: 2, orientation: 0.5);
-	ampLFO = SinOsc.ar(LFNoise1.kr(ExpRand(0.1, 0.167)).range(0.0667, 0.333), 1.5pi).range(0, 1);
+	ampLFO = SinOsc.ar(LFNoise1.kr(ExpRand(0.05, 0.067)).range(0.0333, 0.167), 1.5pi).range(0, 1);
 	sig = sig * ampLFO;
 	sig = Limiter.ar(sig, \limitLevel.kr(0.8), \releaseTime.kr(0.01));
 	Out.ar(\out.kr(0), sig);
@@ -91,17 +91,6 @@ SynthDef(\boing, {
 	sig = PanAz.ar(5, sig, LFNoise1.kr(ExpRand(1.3, 2.9)), width: 2);
 	Out.ar(\out.kr(0), sig * -3.dbamp);
 }).add;
-
-// SynthDef(\heat, {
-// 	var sig;
-// 	sig = VarSaw.ar(50 /** [0.33.midiratio, 0.67.midiratio]*/, width: LFNoise1.ar(ExpRand(1.1, 2.6)).range(0.15,0.75));
-// 	sig = HPF.ar(sig, \hpfFreq.kr(1000, \hpfLag.kr(0.0)));
-// 	sig = sig * LFNoise1.ar(ExpRand(1.3, 2.6)).range(0,1) * \amp.kr(1) /** -3.dbamp*/;
-// 	// sig = JPverb.ar(sig, t60: 2, size: 2, high: 0.67);
-// 	sig = sig * EnvGen.kr(Env.asr(5, 1, 2), \gate.kr(1), doneAction: 2);
-// 	sig = PanAz.ar(5, sig, LFNoise1.kr(ExpRand(0.3, 0.9)), width: 2);
-// 	Out.ar(\out.kr(0), sig);
-// }).add;
 
 SynthDef(\heat, {
 	var sig, detunes, panPositions;
@@ -142,13 +131,4 @@ SynthDef(\verb, {
 	// SendReply.kr(Impulse.kr(10), "/ampEnv", [ampEnv]);
 	Out.ar(\out.kr(0), sig);
 }).add;
-
-// SynthDef(\hall, {
-// 	var sig;
-// 	sig = In.ar(0, 1);
-// 	sig = JPverb.ar(sig, size: 2);
-// 	sig = SplayAz.ar(5, sig, spread: 5, width: 5);
-// 	sig = Limiter.ar(sig, 0.8, 0.01);
-// 	Out.ar(\out.kr(0), sig);
-// }).add;
 )
